@@ -26,7 +26,7 @@ class ApiController extends Controller
 
         foreach ($names as $name) {
             $nombre = mb_strtolower($name->nombre, 'UTF-8');
-            $nombre = $this->removeAccents($name);
+            $nombre = $this->removeAccents($nombre);
             $percent = $this->findSimilar($request_name, $nombre);
             if ($percent >= $request_percent) {
                 $resultado[] = [
@@ -68,17 +68,20 @@ class ApiController extends Controller
      */
     private function findSimilar($request_name, $name)
     {
-        $comparePercent[] = $this->compareSimilar($request_name, $name);
-        $excepciones = [
-            'v' => 'b',
-            'b' => 'v',
-            's' => 'z',
-            'z' => 's',
-            'j' => 'g',
-            'g' => 'j'
-        ];
-        foreach ($excepciones as $key => $value) {
-            $comparePercent[] = $this->compareSimilarReplaceException($request_name, $name, $key, $value);
+        $permutaction_names = $this->getPermutations($request_name);
+        foreach ($permutaction_names as $permutaction_name) {
+            $comparePercent[] = $this->compareSimilar($permutaction_name, $name);
+            $excepciones = [
+                'v' => 'b',
+                'b' => 'v',
+                's' => 'z',
+                'z' => 's',
+                'j' => 'g',
+                'g' => 'j'
+            ];
+            foreach ($excepciones as $key => $value) {
+                $comparePercent[] = $this->compareSimilarReplaceException($permutaction_name, $name, $key, $value);
+            }
         }
 
         $porcentaje = max($comparePercent);
@@ -88,29 +91,21 @@ class ApiController extends Controller
 
     /**
      * Metodo para comparar la cadena ingresada en el servicio contra el nombre en bd
-     * @param Array $request_name arreglo de nombre y apellido a comparar
+     * @param String $request_name nombre y apellido a comparar
      * @param String $name nombre de la bd a comparar
      * @return float porcentaje de similitud
      * @author  alejandro.carvajal <alejo.carvajal03@gmail.com>
      */
     private function compareSimilar($request_name, $name)
     {
-        if (count($request_name) > 1) {
-            $name_last = $request_name[0] . ' ' . $request_name[1];
-            $last_name = $request_name[1] . ' ' . $request_name[0];
-            similar_text($name_last, $name, $porcentaje_i_nombre);
-            similar_text($last_name, $name, $porcentaje_i_apellido);
-            $porcentaje = $porcentaje_i_nombre >= $porcentaje_i_apellido ? $porcentaje_i_nombre : $porcentaje_i_apellido;
-        } else {
-            similar_text($request_name[0], $name, $porcentaje_final);
-            $porcentaje = $porcentaje_final;
-        }
-        return $porcentaje;
+
+        similar_text($request_name, $name, $porcentaje_final);
+        return $porcentaje_final;
     }
 
     /**
      * Metodo para comparar la cadena ingresada en el servicio contra el nombre en bd, reemplazando caracteres en las cadenas
-     * @param Array $request_name arreglo de nombre y apellido a comparar
+     * @param String $request_name nombre y apellido a comparar
      * @param String $name nombre de la bd a comparar
      * @param String $search caracter de busqueda a reemplazar
      * @param String $replace caracter de reemplazo en la busqueda
@@ -120,18 +115,10 @@ class ApiController extends Controller
     private function compareSimilarReplaceException($request_name, $name, $search, $replace)
     {
         $name = str_replace($search, $replace, $name);
+        $request_name[0] = str_replace($search, $replace, $request_name[0]);
 
-        if (count($request_name) > 1) {
-            $name_last = str_replace($search, $replace, $request_name[0] . ' ' . $request_name[1]);
-            $last_name = str_replace($search, $replace, $request_name[1] . ' ' . $request_name[0]);
-            similar_text($name_last, $name, $porcentaje_i_nombre);
-            similar_text($last_name, $name, $porcentaje_i_apellido);
-            $porcentaje = $porcentaje_i_nombre >= $porcentaje_i_apellido ? $porcentaje_i_nombre : $porcentaje_i_apellido;
-        } else {
-            $request_name[0] = str_replace($search, $replace, $request_name[0]);
-            similar_text($request_name[0], $name, $porcentaje_final);
-            $porcentaje = $porcentaje_final;
-        }
+        similar_text($request_name, $name, $porcentaje);
+
         return $porcentaje;
     }
 
@@ -150,5 +137,43 @@ class ApiController extends Controller
             'ú' => 'u',
         ];
         return strtr($word, $conv);
+    }
+    /**
+     * Metodo para permutar los nombres y apellidos, tener todas las posibles alternativas
+     * @param String $array arreglo de nombres y apellidos a permutar
+     * @author  alejandro.carvajal <alejo.carvajal03@gmail.com>
+     */
+    private function getPermutations($array)
+    {
+        $result = [];
+
+        $recurse = function ($array, $start_i = 0) use (&$result, &$recurse) {
+            if ($start_i === count($array) - 1) {
+                array_push($result, $array);
+            }
+
+            for ($i = $start_i; $i < count($array); $i++) {
+                //Swap array value at $i and $start_i
+                $t = $array[$i];
+                $array[$i] = $array[$start_i];
+                $array[$start_i] = $t;
+
+                //Recurse
+                $recurse($array, $start_i + 1);
+
+                //Restore old order
+                $t = $array[$i];
+                $array[$i] = $array[$start_i];
+                $array[$start_i] = $t;
+            }
+        };
+
+        $recurse($array);
+
+        foreach ($result as $value) {
+            $final[] = implode(" ", $value);
+        }
+
+        return $final;
     }
 }

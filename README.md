@@ -38,19 +38,22 @@ Algoritmo ( ApiController  )
 
     4.2) Se eliminan los acentos del nombre
 
-5) Cada registro se compara a traves de similar_text
+5) Se permutan el nombre a buscar para obtener todas las posibles alternativas de comparación (orden de nombres y apellidos)
 
-    5.1) La primera comparación se realiza con nombre y apellido /  apellido y nombre; Se retorna el de mayor porcentaje en la coincidencia
+6) Se recorre cada permutacion 
 
-    5.2) La segunda comparación se realiza con nombre y apellido /  apellido y nombre reemplazando caracteres en los nombres (b,v,s,z)
+    6.1) La primera comparación se realiza con similar_text entre la permutacion y el nombre del diccionario
+
+    6.2) La segunda comparación se realiza con similar_text entre la permutacion y el nombre reemplazando caracteres en los nombres (b,v,s,z,j,g)
 
     5.3) Cuando se tienen los porcentajes de las comparaciones anteriores, se devuelve el mas alto
 
-6) si el porcentaje obtenido de la comparación es mayor o igual al solicitado se agrega toda la info del nombre a un array
+7) si el porcentaje obtenido de la comparación es mayor o igual al solicitado se agrega toda la info del nombre a un array
 
-7) una vez termina se devuelve un JSON con los resultados encontrados, cantidad de registros y mensaje de ejecucion
+8) una vez termina se devuelve un JSON con los resultados encontrados, cantidad de registros y mensaje de ejecucion
 
 ## Uso WebService
+
 - Servicio Obtener token de usuario
     - Servidor: http://127.0.0.1:8000/api/login
     - Metodo: POST
