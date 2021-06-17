@@ -1,61 +1,113 @@
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400"></a></p>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
 
-## About Laravel
+## Instalación
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Requiere PHP 7.2
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Descomprimir el archivo stradataAPI.zip
+- Acceder a la carpeta stradataAPI
+- Modificar el archivo .env los parametros de la BD
+    ~~~
+    DB_CONNECTION=mysql
+    DB_HOST=localhost
+    DB_PORT=3306
+    DB_DATABASE=stradata
+    DB_USERNAME=root
+    DB_PASSWORD=admin
+    ~~~
+- Importar el archivo stradata.sql en la base de datos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Ejecución
+a través del terminal se ejecuta el comando:
+php artisan serve --port=8001
 
-## Learning Laravel
+## Algoritmo
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Algoritmo ( ApiController  )
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1) Se consulta todos los registros del diccionario en la base de datos
 
-## Laravel Sponsors
+2) Se convierte el nombre a buscar en minuscula
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+3) Se eliminan los acentos del nombre a buscar
 
-### Premium Partners
+4) Se recorre cada uno de los registros
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[OP.GG](https://op.gg)**
+    4.1) Se convierte el nombre del diccionario en minuscula
 
-## Contributing
+    4.2) Se eliminan los acentos del nombre
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+5) Cada registro se compara a traves de similar_text
 
-## Code of Conduct
+    5.1) La primera comparación se realiza con nombre y apellido /  apellido y nombre; Se retorna el de mayor porcentaje en la coincidencia
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+    5.2) La segunda comparación se realiza con nombre y apellido /  apellido y nombre reemplazando caracteres en los nombres (b,v,s,z)
 
-## Security Vulnerabilities
+    5.3) Cuando se tienen los porcentajes de las comparaciones anteriores, se devuelve el mas alto
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+6) si el porcentaje obtenido de la comparación es mayor o igual al solicitado se agrega toda la info del nombre a un array
 
-## License
+7) una vez termina se devuelve un JSON con los resultados encontrados, cantidad de registros y mensaje de ejecucion
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Uso WebService
+- Servicio Obtener token de usuario
+    - Servidor: http://127.0.0.1:8000/api/login
+    - Metodo: POST
+    - Body en JSON:
+        ~~~
+        {
+            "email" : "test@gmail.com",
+            "password" : "12345678"
+        }
+        ~~~
+    - Retorno:
+        ~~~
+        {
+        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC8xMjcuMC4wLjE6ODAwMVwvYXBpXC9sb2dpbiIsImlhdCI6MTYyMzkyNjUxNCwiZXhwIjoxNjIzOTMwMTE0LCJuYmYiOjE2MjM5MjY1MTQsImp0aSI6IlVjemtsZkpDREVObXloWHoiLCJzdWIiOjEsInBydiI6Ijg3ZTBhZjFlZjlmZDE1ODEyZmRlYzk3MTUzYTE0ZTBiMDQ3NTQ2YWEifQ.2IjtaAnSrQ35vHYt3Q51FJAjOspxXXF2E3Vx1xV3BJ8"
+        }
+        ~~~
+- Servicio obtiene las coincidencias del nombre
+    - Servidor: http://127.0.0.1:1/api/stradataAPI/findName
+    - Metodo: POST
+    - Header:
+        - Authorization: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIxIiwianRpIjoiNmVjNDZmZmNjNzg2YzczZDExZDMyZGQ5NGI1MTU2YWZjMDMwODY1ZTNmYzA3ZTI0YjdmYmU2MjQxZWMxYWU5MTRjYjRkMGUwNjU0OWIwNjgiLCJpYXQiOjE2MjM4MzI0ODAsIm5iZiI6MTYyMzgzMjQ4MCwiZXhwIjoxNjU1MzY4NDgwLCJzdWIiOiIxIiwic2NvcGVzIjpbXX0.pts_YPVo8iD9XriRwwFmiCoqdPbSi_WfWcxhqi-SArbRoFcRTuOKP4dBo9iwysF7aVRTkGn0fkeaGZ7NV4FGX-4GyL2EJ6z3wGEZC4pMjhflMROQZTOSg4TzNMzOjPv8TeOM7gdC6vRJAnPIe2j5WbecQKoTe2tbS6j15VtRYNEVrOQ7nvX6Zx8dYpwqZgxnf03wvgzwgtRuNk0SZ2-5ldFFF9pkLD5Pli2rjHPBe_e8M3AzQWNKE2MwSdRiyRl7jtqT4kZwuvClMx_FE2-N948N1vadf08atxzA5N-RTo05PePA7jVMlg08xHNb-bj-FsntA8lnqTnx03018goX0sQoc18I6xo6yZ1KslpS8M4hMiIss2o2275qJBMTQiV1S30G7o1yXksh4BQdOTNG67mrOh0zmloenYrn236P5FjySIfsaFR2ubYqJKvTqRWksOZOatEnE6zmco6n-ht2wEoDax6gJrMg3TkKV5gsnFX9J25om1XzaSxhybZjYa0gR5mhdctXhzPsdJvVp8fAlcqFTBSOItVneaZC-GvVCjRWplxq5vJgmE0GY9dKF291PPKiQbVZcwBv3SUD0JILWIwKY_y4dcm4ysidzlqRij4NO_oUc3mdrDBz_gz33I1lP1CSR1kX-OOSAGmAA0bTZkNyHtWPzu9CL3bLtnBR8Rk"
+    - Body en JSON:
+        ~~~
+        {
+            "nombre" : "Alejandro Rodriguez",
+            "porcentaje" : "14.5"
+        }
+        ~~~
+    - Retorno: 
+        ~~~
+        {
+            "nombre_buscado": "Alejandro Rodriguez",
+            "porcentaje_buscado": "14.5",
+            "registros_encontrados": 2,
+            "resultados": [
+                {
+                    "nombre": "Bryan Alejandro Castro Parrado",
+                    "porcentaje": 14.516129032258064,
+                    "departamento": "ARAUCA",
+                    "localidad": "NO APLICA",
+                    "municipio": "SARAVENA",
+                    "anios_activo": 10,
+                    "tipo_persona": "PREFERENTE",
+                    "tipo_cargo": "POLITICO"
+                },
+                {
+                    "nombre": "Alejandro Arboleda Urrego",
+                    "porcentaje": 14.634146341463415,
+                    "departamento": "CUNDINAMARCA",
+                    "localidad": "NO APLICA",
+                    "municipio": "UBALA",
+                    "anios_activo": 8,
+                    "tipo_persona": "PREFERENTE",
+                    "tipo_cargo": "POLITICO"
+                }
+            ],
+            "estado_ejecucion": "registros encontrados"
+        }
+        ~~~
+        

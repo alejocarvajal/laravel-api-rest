@@ -73,7 +73,9 @@ class ApiController extends Controller
             'v' => 'b',
             'b' => 'v',
             's' => 'z',
-            'z' => 's'
+            'z' => 's',
+            'j' => 'g',
+            'g' => 'j'
         ];
         foreach ($excepciones as $key => $value) {
             $comparePercent[] = $this->compareSimilarReplaceException($request_name, $name, $key, $value);
